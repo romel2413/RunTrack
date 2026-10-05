@@ -1,18 +1,24 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { Stack } from "expo-router";
+import { ClerkProvider } from "@clerk/expo";
+import { tokenCache } from "@clerk/expo/token-cache";
+import { Text, View } from "react-native";
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+export default function RootLayout() {
+  const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
-SplashScreen.preventAutoHideAsync();
+  if (!publishableKey) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 28 }}>
+        <Text style={{ color: "#14243A", textAlign: "center", fontSize: 16 }}>
+          Clerk is not configured. Add EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY to the project environment, then restart Expo.
+        </Text>
+      </View>
+    );
+  }
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+      <Stack screenOptions={{ headerShown: false, animation: "fade" }} />
+    </ClerkProvider>
   );
 }

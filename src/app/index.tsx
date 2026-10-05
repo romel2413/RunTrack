@@ -1,98 +1,68 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from "expo-router";
+import { useAuth } from "@clerk/expo";
+import { Image } from "expo-image";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { BrandLogo } from "@/components/auth/auth-ui";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+const landscape = require("@/assets/images/authimage.png");
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+export default function WelcomeScreen() {
+  const { isLoaded, isSignedIn } = useAuth();
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) router.replace("/home");
+  }, [isLoaded, isSignedIn]);
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <View style={styles.container}>
+      <StatusBar style="light" />
+      <Image source={landscape} contentFit="cover" style={StyleSheet.absoluteFill} />
+      <View style={styles.scrim} />
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+      <View style={styles.brand}>
+        <BrandLogo />
+        <Text style={styles.tagline}>Better Runs. A Healthier You.</Text>
+      </View>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+      <View style={styles.bottom}>
+        <Text style={styles.message}>Every step takes you somewhere.</Text>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push("/signin")}
+          style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+        >
+          <Text style={styles.buttonText}>Get Started</Text>
+        </Pressable>
+        <Text style={styles.signInPrompt}>
+          Already have an account?{" "}
+          <Text style={styles.signInLink} onPress={() => router.push("/signin")}>
+            Sign in
+          </Text>
+        </Text>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+  container: { flex: 1, backgroundColor: "#173638" },
+  scrim: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(5, 25, 29, 0.28)" },
+  brand: { alignItems: "center", marginTop: "25%" },
+  tagline: { color: "rgba(255,255,255,0.92)", fontSize: 13, marginTop: 7 },
+  bottom: { marginTop: "auto", paddingHorizontal: 24, paddingBottom: 30, alignItems: "center" },
+  message: { color: "rgba(255,255,255,0.94)", fontSize: 14, marginBottom: 18 },
+  button: {
+    width: "100%",
+    height: 52,
+    borderRadius: 15,
+    backgroundColor: "#07966F",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
+  pressed: { opacity: 0.84 },
+  buttonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "700" },
+  signInPrompt: { color: "rgba(255,255,255,0.88)", fontSize: 12, marginTop: 16 },
+  signInLink: { color: "#A7F1D7", fontWeight: "700" },
 });
